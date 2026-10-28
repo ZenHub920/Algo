@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from simulator.loaders import day_input_paths
+from solution.log_utils import (
+    extract_deliveries, extract_trips, join_outcomes, parse_config, parse_distances,
+    parse_parcels, validate_metrics,
+)
 
 
 def calculate_metrics(
@@ -24,12 +28,24 @@ def calculate_metrics(
     midnight: "17:00" is 17 * 60 = 1020.
     """
 
-    # Illustration only: replace or extend this with your chosen metric.
-    number_of_trips = 0
-    for event in events:
-        if event["event_type"] == "hub_departure":
-            number_of_trips += 1
-    return {"number_of_trips": number_of_trips}
+    # --- Parse raw inputs into typed structures (metric-neutral) -------------
+    # All parcels in the day's CSV, including ones never delivered.
+    parcel_info = parse_parcels(parcels)          # {parcel_id: {arrival_time, delivery_location_id,
+                                                  #   delivery_window_start/end (minutes), size}}
+    dist = parse_distances(distances)             # {origin: {destination: km}}
+    fleet = parse_config(config)                  # {number_of_vehicles, capacity, vehicle_range_km}
+    deliveries = extract_deliveries(events)       # {parcel_id: {time, vehicle_id, trip_id}}
+    outcomes = join_outcomes(parcel_info, deliveries)  # every parcel + delivered/delivery_time
+    trips = extract_trips(events)                 # {(vehicle_id, trip_id): {departure_time,
+                                                  #   parcel_ids, delivery_times, return_time}}
+    del dist, fleet, outcomes  # Unused until the metric is implemented.
+
+    # --- TODO (Task 1): compute the chosen performance metric here ----------
+    # Illustration only (from the brief): replace with the chosen metric.
+    result: Dict[str, Any] = {"number_of_trips": len(trips)}
+
+    # Appendix C: string keys, JSON-serializable, finite numbers only.
+    return validate_metrics(result)
 
 
 def main(argv: Optional[List[str]] = None) -> int:

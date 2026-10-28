@@ -18,7 +18,8 @@ Python 3.9+; standard library only.
 | Batch runner and comparison scripts (`scripts/`) | Done |
 | Baseline logs, days 001–020 | Generated |
 | **Task 1: performance metric** | **TODO: not chosen yet** |
-| **`calculate_metrics` in `performance_monitor.py`** | **TODO: still the trip-count illustration** |
+| `calculate_metrics` inputs/outputs (Appendix C) | Done: inputs parsed, deliveries joined to parcels, return value validated |
+| **Metric value in `calculate_metrics`** | **TODO: still returns the trip-count illustration** |
 | **Task 3: dispatch policies** | **TODO: `heuristic_best.py` is a stub returning `[]`** |
 | **Task 4: experiments and analysis** | **TODO** (see `docs/report_outline.md`) |
 
@@ -32,8 +33,8 @@ simulator/                    # Supplied — do not modify
 data/                         # Supplied — do not modify (day_001..day_020, dist.csv, config.json)
 solution/
 ├── __init__.py               # Supplied — do not modify
-├── performance_monitor.py    # Supplied template — TODO: implement calculate_metrics
-├── log_utils.py              # Ours: parse CSV rows + event log into trips/deliveries
+├── performance_monitor.py    # Supplied template — parsing wired in; TODO: the metric itself
+├── log_utils.py              # Ours: parse inputs + log, join deliveries to parcels, validate output
 └── policies/
     ├── __init__.py           # Supplied — do not modify
     ├── baseline.py           # Supplied FIFO first-fit — do not modify
@@ -43,7 +44,7 @@ results/<policy>/<day>/       # log.txt (simulator) + metrics.json (monitor)
 scripts/
 ├── run_experiments.py        # Simulate + measure many days / policies in one go
 └── compare_results.py        # Aggregate every metrics.json into results/summary.csv
-tests/                        # unittest: helpers vs. simulator rules, end-to-end smoke tests
+tests/                        # unittest: helpers vs. simulator, Appendix C contract, end-to-end
 docs/report_outline.md        # Skeleton for the Task 1–4 write-up
 ```
 
@@ -83,6 +84,30 @@ Tests:
 ```bash
 python3 -m unittest discover -s tests -t .
 ```
+
+## `calculate_metrics(parcels, distances, config, events)` (Appendix C)
+
+Called once per run by `solution/performance_monitor.py`. Its inputs are raw:
+
+| Argument | Shape | Already handled by |
+|---|---|---|
+| `parcels` | list of CSV row dicts, **all strings**, with `parcel_id`; includes parcels never delivered; no assignment/delivery fields | `log_utils.parse_parcels` (HH:MM → minutes, size → float) |
+| `distances` | list of `dist.csv` rows (`location_1`, `location_2`, `dist` as string) | `log_utils.parse_distances` → `[origin][destination]` km |
+| `config` | dict: `number_of_vehicles`, `capacity`, `vehicle_range_km` | `log_utils.parse_config` |
+| `events` | log records in chronological order (Appendix B) | `extract_deliveries`, `extract_trips` |
+
+Deliveries are matched to parcels by `parcel_id` with `log_utils.join_outcomes`,
+which returns **every** parcel with `delivered`, `delivery_time`, `vehicle_id` and
+`trip_id` (all `None` if undelivered) for window and undelivered-parcel analysis.
+
+Return value: a dict of string metric names to JSON-serializable values, all
+numbers finite (no NaN or infinity). The script writes it to `metrics.json`.
+`calculate_metrics` passes its result through `log_utils.validate_metrics`, which
+enforces this.
+
+The template already parses everything; the only TODO is the metric itself.
+Note that the baseline leaves many parcels undelivered (day_001: 349 of 799
+delivered), so how the metric treats undelivered parcels matters.
 
 ## Adding a new policy
 
