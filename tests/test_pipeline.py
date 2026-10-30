@@ -77,9 +77,9 @@ class PipelineTests(unittest.TestCase):
         Simulator(parcels, distances, config, dispatch_policy=checked_dispatch).run(self.dir / "log.txt")
         self.assertTrue(any(checked))
 
-    def test_heuristic_best_stub_runs(self):
+    def test_heuristic_best_runs(self):
         simulator = simulate("solution.policies.heuristic_best", self.dir / "log.txt")
-        self.assertEqual(len(simulator.delivered), 0)
+        self.assertGreater(len(simulator.delivered), 0)
 
     def test_performance_monitor_cli(self):
         simulate("solution.policies.baseline", self.dir / "log.txt")

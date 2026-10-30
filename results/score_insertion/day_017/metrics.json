@@ -1,0 +1,17 @@
+{
+  "service_score": 0.877567,
+  "total_credit": 692.4,
+  "parcels_total": 789,
+  "parcels_delivered": 756,
+  "delivery_rate": 0.958175,
+  "on_time_deliveries": 686,
+  "on_time_rate": 0.869455,
+  "late_deliveries": 70,
+  "zero_credit_deliveries": 60,
+  "mean_minutes_late": 268.654114,
+  "early_deliveries": 215,
+  "trips": 35,
+  "total_km": 4189.146,
+  "km_per_delivered_parcel": 5.541198,
+  "mean_load_utilisation": 0.697238
+}

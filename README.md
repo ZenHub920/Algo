@@ -17,14 +17,29 @@ Python 3.9+; standard library only.
 | Log parsing helpers (`solution/log_utils.py`) | Done: metric-neutral |
 | Batch runner and comparison scripts (`scripts/`) | Done |
 | Baseline logs, days 001–020 | Generated |
-| **Task 1: performance metric** | **TODO: not chosen yet** |
+| Task 1: performance metric | Chosen: weighted service score (see below) |
 | `calculate_metrics` inputs/outputs (Appendix C) | Done: inputs parsed, deliveries joined to parcels, return value validated |
-| **Metric value in `calculate_metrics`** | **TODO: still returns the trip-count illustration** |
-| **Task 3: dispatch policies** | **TODO: `heuristic_best.py` is a stub returning `[]`** |
+| Metric in `calculate_metrics` | Done: `service_score` plus supporting figures |
+| Task 3: dispatch policies | Done: `edd_heap.py` (#1), `location_batching.py` (#3), `score_insertion.py` (#4), `urgency_insertion.py` (#8), `urgency_holdback.py` (#8 + #7) and the proposed `heuristic_best.py` (#8 + adaptive #7, with heap and UCS) |
 | **Task 4: experiments and analysis** | **TODO** (see `docs/report_outline.md`) |
 
-`results/*/day_*/metrics.json` currently hold the placeholder `number_of_trips`
-metric. Re-run the monitor once the real metric is in place (command below).
+## Performance metric: weighted service score
+
+Per parcel (`helpers.service_credit`, shared by the monitor and the policies):
+
+- **1.0** if delivered by its window end. Early delivery is not penalised.
+- **−0.1 for every started 10 minutes late** (0.5 min late → 0.9, 10.5 min → 0.8),
+  never below 0, so credit is 0 once more than 90 minutes late.
+- **0** if never delivered.
+
+`service_score` = total credit ÷ **all** parcels in the day's file (0 to 1). The
+denominator includes undelivered parcels and the few that no policy could deliver
+in time, so withholding parcels can never raise the score.
+
+Supporting figures in `metrics.json` (they explain results; they don't rank
+policies): delivery rate, on-time rate, late and zero-credit deliveries, mean
+minutes late, early deliveries, trips, total km, km per delivered parcel, mean
+load utilisation.
 
 ## Layout
 
@@ -38,11 +53,18 @@ solution/
 └── policies/
     ├── __init__.py           # Supplied — do not modify
     ├── baseline.py           # Supplied FIFO first-fit — do not modify
-    ├── helpers.py            # Ours: shared feasibility/route helpers for every policy
-    └── heuristic_best.py     # Ours: recommended policy — TODO
+    ├── helpers.py            # Ours: shared route helpers, service_credit, insertion engine,
+    │                         #   HeapPriorityQueue (Week 7) and ucs_shortest_tour (Week 10)
+    ├── edd_heap.py           # Policy #1: earliest deadline first via heap priority queue (heap sort)
+    ├── location_batching.py  # Policy #3: batch parcels by location, nearest-neighbour extension
+    ├── score_insertion.py    # Policy #4: insert stops by predicted credit per extra km
+    ├── urgency_insertion.py  # Policy #8: #4, but start each trip at the most at-risk location
+    ├── urgency_holdback.py   # Policy #8 + #7: #8, but hold light, non-urgent trips one round
+    └── heuristic_best.py     # PROPOSED: #8 + adaptive #7, heap seed ranking, UCS stop ordering
 results/<policy>/<day>/       # log.txt (simulator) + metrics.json (monitor)
 scripts/
 ├── run_experiments.py        # Simulate + measure many days / policies in one go
+├── ablation_heuristic_best.py # Switch heap fallback / UCS off to measure their effect
 └── compare_results.py        # Aggregate every metrics.json into results/summary.csv
 tests/                        # unittest: helpers vs. simulator, Appendix C contract, end-to-end
 docs/report_outline.md        # Skeleton for the Task 1–4 write-up
@@ -108,6 +130,16 @@ enforces this.
 The template already parses everything; the only TODO is the metric itself.
 Note that the baseline leaves many parcels undelivered (day_001: 349 of 799
 delivered), so how the metric treats undelivered parcels matters.
+
+## Course content used
+
+| IS115 topic | Where |
+|---|---|
+| Hash maps (Week 7) | Parcels grouped by location and credit at risk per location (`helpers.build_insertion_route`, `heuristic_best`, `location_batching`) |
+| Heap-based priority queue, upheap/downheap, bottom-up build (Week 7) | `helpers.HeapPriorityQueue`; seed ranking in `heuristic_best`; deadline queue in `edd_heap` |
+| Heap sort (Week 7) | `edd_heap`: repeated `remove_min` gives earliest-deadline order |
+| Uniform Cost Search with a priority queue (Week 10) | `helpers.ucs_shortest_tour`: shortest visiting order of a trip's stops, used by `heuristic_best` |
+| Queue / FIFO (Week 5) | The supplied baseline serves parcels first-in, first-out |
 
 ## Adding a new policy
 

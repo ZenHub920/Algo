@@ -80,8 +80,11 @@ class MonitorContractTests(unittest.TestCase):
         self.assertIsInstance(metrics, dict)
         self.assertTrue(all(isinstance(key, str) for key in metrics))
         json.dumps(metrics, allow_nan=False)  # Same check the supplied script applies
-        self.assertEqual(metrics["number_of_trips"],
+        self.assertEqual(metrics["trips"],
                          len(log_utils.events_of_type(self.events, "hub_departure")))
+        self.assertGreaterEqual(metrics["service_score"], 0.0)
+        self.assertLessEqual(metrics["service_score"], metrics["delivery_rate"])
+        self.assertGreaterEqual(metrics["service_score"], metrics["on_time_rate"])
 
     def test_validate_metrics_rejects_bad_values(self):
         log_utils.validate_metrics({"score": 0.8, "by_day": {"a": [1, 2]}, "note": None})
