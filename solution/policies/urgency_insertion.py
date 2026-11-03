@@ -16,6 +16,10 @@ backlog fallback). If nothing is at risk, it behaves exactly like #4.
 WAIT = minutes until the next planning round at which another vehicle is
 ready (from context["fleet"]), plus EXTRA_WAIT for that van's own detour.
 
+Course content (IS115): construction is Greedy Algorithm 2 (insertion,
+Week 11 Part 2a) via the shared engine; credit at risk is totalled per
+location in a hash map (Week 7).
+
 Complexity per call: seeding O(n + V) (V vehicles), then #4's
 O(m^2 * (L*k + n)). Space O(n + L + k).
 """

@@ -12,6 +12,12 @@ the 18:00 return cutoff (first-fit, like the baseline); otherwise it is skipped
 and later parcels are still tried. Stops are visited in deadline order.
 Always dispatches if anything fits (no waiting rule).
 
+It is also a greedy algorithm (Week 11 Part 1): at every step it takes the
+locally best parcel, the earliest deadline. Its results illustrate the slides'
+warning that local decisions do not guarantee the best global solution: it
+scores below the FIFO baseline because it keeps chasing parcels that are
+already too late to earn credit.
+
 It differs from the FIFO baseline only in the priority (deadline instead of
 arrival), so it isolates the value of prioritising urgent parcels without any
 grouping by location.

@@ -135,11 +135,16 @@ delivered), so how the metric treats undelivered parcels matters.
 
 | IS115 topic | Where |
 |---|---|
+| Queue / FIFO (Week 5) | The supplied baseline serves parcels first-in, first-out |
 | Hash maps (Week 7) | Parcels grouped by location and credit at risk per location (`helpers.build_insertion_route`, `heuristic_best`, `location_batching`) |
 | Heap-based priority queue, upheap/downheap, bottom-up build (Week 7) | `helpers.HeapPriorityQueue`; seed ranking in `heuristic_best`; deadline queue in `edd_heap` |
 | Heap sort (Week 7) | `edd_heap`: repeated `remove_min` gives earliest-deadline order |
-| Uniform Cost Search with a priority queue (Week 10) | `helpers.ucs_shortest_tour`: shortest visiting order of a trip's stops, used by `heuristic_best` |
-| Queue / FIFO (Week 5) | The supplied baseline serves parcels first-in, first-out |
+| Uniform Cost Search with a priority queue (Week 10) | `helpers.ucs_shortest_tour`: exact shortest visiting order of a trip's stops, used by `heuristic_best` |
+| Greedy Algorithm 1 for TSP, nearest neighbour (Week 11 Part 2a) | `location_batching`: after the seed, repeatedly extend to the nearest unvisited location from the last stop |
+| Greedy Algorithm 2 for TSP, insertion (Week 11 Part 2a) | `helpers.build_insertion_route` (#4, #8, #8 + #7, `heuristic_best`): grow the trip by inserting the best location at the best position. Generalises Greedy 2: every location and every position are tried, ranked by predicted credit per extra km instead of distance alone |
+| Greedy choice rule, "local decisions do not guarantee the best global solution" (Week 11 Part 1) | `edd_heap` always takes the earliest deadline next and scores below the FIFO baseline |
+| Exhaustive search vs heuristics; fast / general / optimal trade-off (Week 11 Part 1) | `heuristic_best` uses exact search (UCS) only for trips of at most 7 stops and the greedy order otherwise |
+| Intractability, polynomial vs exponential complexity (Week 13) | UCS is exponential, O(m^3 2^m) for m stops, so it is capped at 7 stops; every other step of every policy is polynomial |
 
 ## Adding a new policy
 

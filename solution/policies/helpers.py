@@ -202,6 +202,7 @@ def route_credit(route: List[str], parcel: ParcelMap, context: SimulationContext
 # ---------------------------------------------------------------------------
 # Shared insertion engine (policies #4 and #8)
 # ---------------------------------------------------------------------------
+# Greedy Algorithm 2 for TSP (IS115 Week 11 Part 2a, insertion), generalised.
 # Builds a trip stop by stop. Parcels for one location share a stop. The
 # caller supplies value_fn(parcel_id, arrival_time) -> float, the worth of
 # delivering that parcel at that time; only parcels with value > 0 drive
@@ -446,7 +447,9 @@ def ucs_shortest_tour(stops: List[str], dist: DistanceMap) -> Optional[List[str]
 
     Complexity for m stops: O(m * 2^m) states, O(m) edges each, heap
     operations O(log(m * 2^m)) = O(m), so O(m^3 * 2^m) time, O(m * 2^m) space.
-    Used only for small trips (see heuristic_best.MAX_UCS_STOPS).
+    Used only for small trips (see heuristic_best.MAX_UCS_STOPS): exponential
+    time is intractable for large inputs (IS115 Week 13), and finding the
+    shortest tour is the travelling salesman problem (Week 11 Part 1).
     """
 
     if not stops:

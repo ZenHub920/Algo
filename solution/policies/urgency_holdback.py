@@ -12,6 +12,10 @@ van is HELD at the hub for this round (return []) when all of these hold:
   * it is before LAST_HOLD_TIME (late in the day, always go).
 A held van is reconsidered in the next planning round with fresh parcels.
 
+Course content (IS115): the trip itself is #8's, i.e. Greedy Algorithm 2
+(insertion, Week 11 Part 2a) with a hash-map seed (Week 7); the wait rule is a
+single O(k) check on top.
+
 HOLD_LOAD_FRACTION sensitivity (mean service score, 20 days, tested while
 building this policy): 0.3 -> 0.922, 0.5 -> 0.941, 0.7 -> 0.947, 0.9 -> 0.948.
 0.7 is the start of the plateau, so the result does not hinge on fine tuning.

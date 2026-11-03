@@ -9,6 +9,13 @@ Course content used (IS115):
   * Uniform Cost Search (Week 10): helpers.ucs_shortest_tour searches the
     state space of visiting orders for the trip's stops; the shortest order is
     adopted only if no parcel on the trip loses predicted credit.
+  * Greedy Algorithm 2 for TSP (Week 11 Part 2a, insertion): the trip is
+    built by the shared insertion engine, one locally best stop at a time.
+  * Exhaustive search vs heuristics (Week 11 Part 1, "fast, general, optimal:
+    pick any two") and intractability (Week 13): UCS is an exact search with
+    exponential cost O(m^3 * 2^m), so it is used only for trips of at most
+    MAX_UCS_STOPS stops; larger trips keep the greedy order. Every other step
+    is polynomial.
 
 One dispatch call:
   1. Estimate how long a parcel would wait if this van did not take it.

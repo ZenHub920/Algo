@@ -22,6 +22,14 @@ Each call:
      backlog: insert stops by parcels-per-extra-km instead.
 Always dispatches if any parcel fits (no waiting rule).
 
+Course content (IS115):
+  * Phase A is Greedy Algorithm 2 for TSP (Week 11 Part 2a, insertion),
+    generalised: the slides insert the city closest to the tour next to that
+    city; here every location is tried at every position and the one with the
+    best predicted credit per extra km is inserted. As in any greedy algorithm,
+    each step is locally best and earlier insertions are never undone.
+  * Hash map (Week 7): parcels grouped by delivery location in a dict.
+
 Complexity per call (n available parcels, L locations, m stops, k parcels on
 the route): each insertion step tries L*(m+1) positions, each costing O(k) to
 re-price later stops plus O(n_loc) to price the bundle, so O(L*m*k + m*n) per

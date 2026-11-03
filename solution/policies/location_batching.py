@@ -15,6 +15,12 @@ Each call:
      return cutoff, and repeat until none does.
 Always dispatches if any parcel fits (no waiting rule).
 
+Course content (IS115):
+  * Step 4 is Greedy Algorithm 1 for TSP (Week 11 Part 2a, nearest neighbour):
+    the route is extended from its last stop to the nearest location not yet
+    visited, one step at a time, without revisiting earlier choices.
+  * Hash map (Week 7): parcels grouped by delivery location in a dict.
+
 Complexity per call (n available parcels, L locations, m stops on the route):
   grouping and sorting O(n log n); seed choice O(n); extension O(m * L)
   nearest-neighbour scans; filling O(n). Overall O(n log n + m*L).
