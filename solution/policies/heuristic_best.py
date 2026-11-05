@@ -1,8 +1,9 @@
 """Proposed policy: urgency-seeded insertion with an adaptive wait rule (#8 + adaptive #7).
 
 Course content used (IS115):
-  * Hash maps (Week 7): parcels grouped by location and credit-at-risk totals
-    per location, both Python dicts with O(1) average insert/lookup.
+  * Hash maps (Week 7): parcels grouped by location, credit-at-risk totals per
+    location, and waiting load per location for the time-based backlog check,
+    all Python dicts with O(1) average insert/lookup.
   * Heap-based priority queue (Week 7): helpers.HeapPriorityQueue, built
     bottom-up in O(L), ranks locations by credit at risk; remove_min pops the
     best seed and, if it cannot be reached and back by 18:00, the next one.
@@ -45,13 +46,13 @@ the trip, V vehicles):
   5. O(k + n + V) (hold tests, incl. O(n + L + V) time-based backlog).
   Space O(n + L + k + m * 2^m).
 
-Measured on the 20 historical days (results/heuristic_best; ablation by switching
-USE_* off):
+Measured on the 20 historical days (results/heuristic_best; ablation in
+scripts/ablation_heuristic_best.py and results/ablation_heuristic_best.json):
   * mean service score 0.9559 (worst day 0.942); beats every other policy on
     every one of the 20 days, including #8 + #7 (0.9471);
-  * the time-based backlog check is worth +0.0086 (0.9473 without it): delivery
-    rate rises from 95.4% to 96.2% at the cost of more trips (632 vs 556) and
-    more km per delivered parcel (4.87 vs 4.51);
+  * the time-based backlog check changes 126 decisions and is worth +0.0086
+    (0.9473 without it): delivery rate rises from 95.4% to 96.2% at the cost
+    of more trips (632 vs 556) and more km per delivered parcel (4.87 vs 4.51);
   * UCS re-orders 41 of 632 trips, saving 166.6 km in total (about 4 km per
     re-ordered trip) with no change in score: the minutes saved never let a
     van take different parcels;

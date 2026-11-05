@@ -13,15 +13,12 @@ Python 3.9+; standard library only.
 | Part | State |
 |---|---|
 | Supplied simulator, data, baseline, monitor template | Copied in unchanged |
-| Shared policy helpers (`solution/policies/helpers.py`) | Done: feasibility checks, route distance/timing |
-| Log parsing helpers (`solution/log_utils.py`) | Done: metric-neutral |
-| Batch runner and comparison scripts (`scripts/`) | Done |
-| Baseline logs, days 001–020 | Generated |
-| Task 1: performance metric | Chosen: weighted service score (see below) |
-| `calculate_metrics` inputs/outputs (Appendix C) | Done: inputs parsed, deliveries joined to parcels, return value validated |
-| Metric in `calculate_metrics` | Done: `service_score` plus supporting figures |
-| Task 3: dispatch policies | Done: `edd_heap.py` (#1), `location_batching.py` (#3), `score_insertion.py` (#4), `urgency_insertion.py` (#8), `urgency_holdback.py` (#8 + #7) and the proposed `heuristic_best.py` (#8 + adaptive #7 with a time-based backlog check, heap and UCS) |
-| **Task 4: experiments and analysis** | **TODO** (see `docs/report_outline.md`) |
+| Task 1: performance metric | Done: weighted service score (below), in `solution/performance_monitor.py` |
+| Task 2: baseline performance | Done: `results/baseline/`, days 001–020 |
+| Task 3: dispatch policies | Done: six policies plus the supplied baseline (Results below) |
+| Task 4: experiments and analysis | Done: `results/<policy>/`, `results/summary.csv`, `results/ablation_heuristic_best.json`; write-up notes in `docs/report_outline.md` |
+| Shared code | `solution/policies/helpers.py` (route checks, `service_credit`, insertion engine, heap, UCS), `solution/log_utils.py` (log parsing) |
+| Tests | 38 unit and end-to-end tests in `tests/` |
 
 ## Performance metric: weighted service score
 
@@ -48,7 +45,7 @@ simulator/                    # Supplied — do not modify
 data/                         # Supplied — do not modify (day_001..day_020, dist.csv, config.json)
 solution/
 ├── __init__.py               # Supplied — do not modify
-├── performance_monitor.py    # Supplied template — parsing wired in; TODO: the metric itself
+├── performance_monitor.py    # Supplied template, completed: calculate_metrics computes the service score
 ├── log_utils.py              # Ours: parse inputs + log, join deliveries to parcels, validate output
 └── policies/
     ├── __init__.py           # Supplied — do not modify
@@ -61,13 +58,16 @@ solution/
     ├── urgency_insertion.py  # Policy #8: #4, but start each trip at the most at-risk location
     ├── urgency_holdback.py   # Policy #8 + #7: #8, but hold light, non-urgent trips one round
     └── heuristic_best.py     # PROPOSED: #8 + adaptive #7 (time-based backlog), heap seed ranking, UCS stop ordering
-results/<policy>/<day>/       # log.txt (simulator) + metrics.json (monitor)
+results/<policy>/<day>/       # log.txt (simulator) + metrics.json (monitor); runtimes.json per policy
+results/summary.csv           # every metric, every policy and day (scripts/compare_results.py)
+results/ablation_heuristic_best.json  # proposed policy with components switched off
 scripts/
 ├── run_experiments.py        # Simulate + measure many days / policies in one go
-├── ablation_heuristic_best.py # Switch heap fallback / UCS off to measure their effect
+├── ablation_heuristic_best.py # Switch the time-based backlog check, heap fallback and UCS off to measure their effect
 └── compare_results.py        # Aggregate every metrics.json into results/summary.csv
-tests/                        # unittest: helpers vs. simulator, Appendix C contract, end-to-end
-docs/report_outline.md        # Skeleton for the Task 1–4 write-up
+tests/                        # unittest: helpers vs. simulator, metric and Appendix C contract,
+                              #   heap and UCS, every policy valid on every day, end-to-end
+docs/report_outline.md        # Task 1–4 write-up notes: key points and where the evidence is
 ```
 
 ## Commands (run from the project root)
@@ -127,16 +127,39 @@ numbers finite (no NaN or infinity). The script writes it to `metrics.json`.
 `calculate_metrics` passes its result through `log_utils.validate_metrics`, which
 enforces this.
 
-The template already parses everything; the only TODO is the metric itself.
-Note that the baseline leaves many parcels undelivered (day_001: 349 of 799
-delivered), so how the metric treats undelivered parcels matters.
+Counting undelivered parcels in the denominator matters: the baseline leaves most
+parcels undelivered (day_001: 349 of 799 delivered).
+
+## Results (20 historical days)
+
+Means over day_001–day_020; all from `results/<policy>/day_*/metrics.json`.
+Simulated-day times measured on one MacBook for all policies.
+
+| Policy | Service score | Worst / best day | Delivered | On time | Late deliveries per day | Km per delivered parcel | Trips per day | Seconds per simulated day |
+|---|---|---|---|---|---|---|---|---|
+| **Proposed** (`heuristic_best`) | **0.956** | 0.942 / 0.969 | 96.2% | 93.9% | 18.8 | 4.87 | 31.6 | 0.73 |
+| #8 + #7 (`urgency_holdback`) | 0.947 | 0.934 / 0.959 | 95.4% | 92.8% | 20.5 | 4.54 | 27.8 | 0.79 |
+| #8 (`urgency_insertion`) | 0.914 | 0.879 / 0.949 | 96.0% | 86.2% | 77.9 | 5.37 | 34.3 | 0.62 |
+| #4 (`score_insertion`) | 0.908 | 0.872 / 0.949 | 96.0% | 86.6% | 74.4 | 5.38 | 34.7 | 0.60 |
+| #3 (`location_batching`) | 0.901 | 0.857 / 0.947 | 96.1% | 84.0% | 95.9 | 5.39 | 34.5 | 0.52 |
+| Baseline (`baseline`) | 0.274 | 0.248 / 0.312 | 40.5% | 27.4% | 103.6 | 16.33 | 20.7 | 0.30 |
+| #1 (`edd_heap`) | 0.198 | 0.170 / 0.234 | 51.5% | 17.2% | 272.4 | 12.70 | 21.3 | 0.33 |
+
+The proposed policy beats every other policy on all 20 days. Ablation
+(`scripts/ablation_heuristic_best.py`): the time-based backlog check is worth
++0.0086 (0.9473 without it) and changes 126 of its decisions; UCS re-ordering
+(41 trips) and the heap seed fallback (4 trips) change routes but not the score.
+
+**Recommendation:** `heuristic_best.py`. Grouping parcels by location (0.27 → 0.90)
+and holding light vans while the fleet has time to spare (0.91 → 0.956) carry
+almost all of the gain.
 
 ## Course content used
 
 | IS115 topic | Where |
 |---|---|
 | Queue / FIFO (Week 5) | The supplied baseline serves parcels first-in, first-out |
-| Hash maps (Week 7) | Parcels grouped by location and credit at risk per location (`helpers.build_insertion_route`, `heuristic_best`, `location_batching`) |
+| Hash maps (Week 7) | Parcels grouped by location, credit at risk per location, and waiting load per location for the time-based backlog check (`helpers.build_insertion_route`, `heuristic_best`, `location_batching`) |
 | Heap-based priority queue, upheap/downheap, bottom-up build (Week 7) | `helpers.HeapPriorityQueue`; seed ranking in `heuristic_best`; deadline queue in `edd_heap` |
 | Heap sort (Week 7) | `edd_heap`: repeated `remove_min` gives earliest-deadline order |
 | Uniform Cost Search with a priority queue (Week 10) | `helpers.ucs_shortest_tour`: exact shortest visiting order of a trip's stops, used by `heuristic_best` |
@@ -144,7 +167,7 @@ delivered), so how the metric treats undelivered parcels matters.
 | Greedy Algorithm 2 for TSP, insertion (Week 11 Part 2a) | `helpers.build_insertion_route` (#4, #8, #8 + #7, `heuristic_best`): grow the trip by inserting the best location at the best position. Generalises Greedy 2: every location and every position are tried, ranked by predicted credit per extra km instead of distance alone |
 | Greedy choice rule, "local decisions do not guarantee the best global solution" (Week 11 Part 1) | `edd_heap` always takes the earliest deadline next and scores below the FIFO baseline |
 | Exhaustive search vs heuristics; fast / general / optimal trade-off (Week 11 Part 1) | `heuristic_best` uses exact search (UCS) only for trips of at most 7 stops and the greedy order otherwise |
-| Intractability, polynomial vs exponential complexity (Week 13) | UCS is exponential, O(m^3 2^m) for m stops, so it is capped at 7 stops; every other step of every policy is polynomial |
+| Intractability, polynomial vs exponential complexity (Week 13) | UCS is exponential, O(m^3 2^m) for m stops, so it is capped at 7 stops; every other step of every policy, including the backlog checks, is polynomial |
 
 ## Adding a new policy
 

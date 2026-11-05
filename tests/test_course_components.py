@@ -109,6 +109,31 @@ class CoursePolicyTests(unittest.TestCase):
             with self.subTest(day=number):
                 self.assertTrue(self.run_checked(heuristic_best.dispatch, f"day_{number:03d}").delivered)
 
+    def test_time_backlog_check_prevents_stranding(self):
+        """A light, non-urgent trip is held only if the fleet has driving time to spare."""
+        def record(location, size):
+            return {"arrival_time": 480.0, "delivery_location_id": location, "delivery_window_start": 480.0,
+                    "delivery_window_end": 1080.0, "size": size, "delivery_time": None,
+                    "vehicle_assigned": None, "trip_id": None}
+        # P1 at L1 (20 km round trip) fits a light trip; P2 at L2 (340 km round trip) waits.
+        parcel = {"P1": record("L1", 1.0), "P2": record("L2", 20.0)}
+        context = {"current_time": 600.0, "vehicle_id": 1, "capacity": 30.0,
+                   "travel_distance": {"HUB": {"HUB": 0.0, "L1": 10.0, "L2": 170.0},
+                                       "L1": {"HUB": 10.0, "L1": 0.0, "L2": 160.0},
+                                       "L2": {"HUB": 170.0, "L1": 160.0, "L2": 0.0}},
+                   "departure_delay": 30.0, "return_cutoff": 1080.0, "max_trip_distance_km": 320.0,
+                   "fleet": {1: {"available_at": 600.0, "max_trip_distance_km": 320.0}}}
+        saved = heuristic_best.USE_TIME_BACKLOG
+        try:
+            heuristic_best.USE_TIME_BACKLOG = False   # capacity check alone: 21 units fit one idle van -> hold
+            self.assertEqual(heuristic_best.dispatch(parcel, context), [])
+            heuristic_best.USE_TIME_BACKLOG = True    # 2 x 360 min needed > 450 min of fleet time left -> go
+            self.assertEqual(heuristic_best.dispatch(parcel, context), ["P1"])
+            context["return_cutoff"] = 2000.0         # plenty of fleet time -> hold again
+            self.assertEqual(heuristic_best.dispatch(parcel, context), [])
+        finally:
+            heuristic_best.USE_TIME_BACKLOG = saved
+
     def test_edd_heap_takes_earliest_deadline_first(self):
         parcel = {
             pid: {"arrival_time": 480.0, "delivery_location_id": "L1", "delivery_window_start": 480.0,
