@@ -1,17 +1,17 @@
 {
-  "service_score": 0.952321,
-  "total_credit": 759.0,
+  "service_score": 0.958595,
+  "total_credit": 764.0,
   "parcels_total": 797,
-  "parcels_delivered": 759,
-  "delivery_rate": 0.952321,
-  "on_time_deliveries": 759,
-  "on_time_rate": 0.952321,
+  "parcels_delivered": 764,
+  "delivery_rate": 0.958595,
+  "on_time_deliveries": 764,
+  "on_time_rate": 0.958595,
   "late_deliveries": 0,
   "zero_credit_deliveries": 0,
   "mean_minutes_late": 0.0,
   "early_deliveries": 234,
-  "trips": 26,
-  "total_km": 3089.568,
-  "km_per_delivered_parcel": 4.070577,
-  "mean_load_utilisation": 0.925641
+  "trips": 31,
+  "total_km": 3420.429,
+  "km_per_delivered_parcel": 4.477001,
+  "mean_load_utilisation": 0.783656
 }

@@ -1629,6 +1629,7 @@
 {"event_type": "parcel_arrival", "time": 983.0, "parcel_id": "P000364"}
 {"event_type": "parcel_arrival", "time": 983.0, "parcel_id": "P000394"}
 {"event_type": "dispatch_planning", "time": 990.0}
+{"event_type": "hub_departure", "time": 990.0, "vehicle_id": 5, "trip_id": 3}
 {"event_type": "delivery", "time": 992.131, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000077"}
 {"event_type": "delivery", "time": 992.131, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000261"}
 {"event_type": "delivery", "time": 992.131, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000275"}
@@ -1642,6 +1643,9 @@
 {"event_type": "delivery", "time": 998.326, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000459"}
 {"event_type": "delivery", "time": 998.326, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000635"}
 {"event_type": "dispatch_planning", "time": 1000.0}
+{"event_type": "hub_departure", "time": 1000.0, "vehicle_id": 4, "trip_id": 3}
+{"event_type": "hub_departure", "time": 1000.0, "vehicle_id": 6, "trip_id": 3}
+{"event_type": "hub_departure", "time": 1000.0, "vehicle_id": 9, "trip_id": 4}
 {"event_type": "delivery", "time": 1001.7760000000001, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000068"}
 {"event_type": "delivery", "time": 1001.7760000000001, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000331"}
 {"event_type": "delivery", "time": 1001.7760000000001, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000531"}
@@ -1665,6 +1669,7 @@
 {"event_type": "parcel_arrival", "time": 1010.0, "parcel_id": "P000221"}
 {"event_type": "parcel_arrival", "time": 1010.0, "parcel_id": "P000722"}
 {"event_type": "dispatch_planning", "time": 1010.0}
+{"event_type": "hub_departure", "time": 1010.0, "vehicle_id": 8, "trip_id": 3}
 {"event_type": "delivery", "time": 1011.3670000000001, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000118"}
 {"event_type": "delivery", "time": 1011.3670000000001, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000235"}
 {"event_type": "delivery", "time": 1011.3670000000001, "vehicle_id": 3, "trip_id": 3, "parcel_id": "P000279"}
@@ -1675,25 +1680,33 @@
 {"event_type": "parcel_arrival", "time": 1018.0, "parcel_id": "P000023"}
 {"event_type": "parcel_arrival", "time": 1020.0, "parcel_id": "P000451"}
 {"event_type": "dispatch_planning", "time": 1020.0}
+{"event_type": "hub_departure", "time": 1020.0, "vehicle_id": 7, "trip_id": 3}
 {"event_type": "parcel_arrival", "time": 1021.0, "parcel_id": "P000706"}
 {"event_type": "parcel_arrival", "time": 1022.0, "parcel_id": "P000222"}
 {"event_type": "parcel_arrival", "time": 1022.0, "parcel_id": "P000555"}
+{"event_type": "delivery", "time": 1022.233, "vehicle_id": 6, "trip_id": 3, "parcel_id": "P000402"}
 {"event_type": "dispatch_planning", "time": 1030.0}
-{"event_type": "hub_departure", "time": 1030.0, "vehicle_id": 4, "trip_id": 3}
-{"event_type": "hub_departure", "time": 1030.0, "vehicle_id": 5, "trip_id": 3}
-{"event_type": "hub_departure", "time": 1030.0, "vehicle_id": 6, "trip_id": 3}
+{"event_type": "hub_departure", "time": 1030.0, "vehicle_id": 10, "trip_id": 4}
 {"event_type": "vehicle_return", "time": 1033.6000000000001, "vehicle_id": 3}
+{"event_type": "delivery", "time": 1034.055, "vehicle_id": 5, "trip_id": 3, "parcel_id": "P000073"}
 {"event_type": "parcel_arrival", "time": 1035.0, "parcel_id": "P000008"}
+{"event_type": "delivery", "time": 1035.695, "vehicle_id": 8, "trip_id": 3, "parcel_id": "P000016"}
 {"event_type": "parcel_arrival", "time": 1036.0, "parcel_id": "P000379"}
+{"event_type": "delivery", "time": 1037.539, "vehicle_id": 4, "trip_id": 3, "parcel_id": "P000479"}
+{"event_type": "delivery", "time": 1038.136, "vehicle_id": 9, "trip_id": 4, "parcel_id": "P000144"}
 {"event_type": "parcel_arrival", "time": 1040.0, "parcel_id": "P000525"}
 {"event_type": "dispatch_planning", "time": 1040.0}
 {"event_type": "parcel_arrival", "time": 1042.0, "parcel_id": "P000529"}
+{"event_type": "delivery", "time": 1042.233, "vehicle_id": 7, "trip_id": 3, "parcel_id": "P000394"}
+{"event_type": "delivery", "time": 1042.433, "vehicle_id": 8, "trip_id": 3, "parcel_id": "P000198"}
+{"event_type": "vehicle_return", "time": 1044.466, "vehicle_id": 6}
 {"event_type": "parcel_arrival", "time": 1048.0, "parcel_id": "P000579"}
 {"event_type": "dispatch_planning", "time": 1050.0}
-{"event_type": "delivery", "time": 1052.131, "vehicle_id": 6, "trip_id": 3, "parcel_id": "P000026"}
-{"event_type": "delivery", "time": 1052.233, "vehicle_id": 5, "trip_id": 3, "parcel_id": "P000394"}
-{"event_type": "delivery", "time": 1052.233, "vehicle_id": 5, "trip_id": 3, "parcel_id": "P000402"}
-{"event_type": "delivery", "time": 1052.407, "vehicle_id": 4, "trip_id": 3, "parcel_id": "P000793"}
-{"event_type": "vehicle_return", "time": 1074.2620000000002, "vehicle_id": 6}
-{"event_type": "vehicle_return", "time": 1074.466, "vehicle_id": 5}
-{"event_type": "vehicle_return", "time": 1074.8139999999999, "vehicle_id": 4}
+{"event_type": "delivery", "time": 1052.407, "vehicle_id": 10, "trip_id": 4, "parcel_id": "P000793"}
+{"event_type": "delivery", "time": 1056.738, "vehicle_id": 5, "trip_id": 3, "parcel_id": "P000026"}
+{"event_type": "vehicle_return", "time": 1064.466, "vehicle_id": 7}
+{"event_type": "vehicle_return", "time": 1067.933, "vehicle_id": 8}
+{"event_type": "vehicle_return", "time": 1074.8139999999999, "vehicle_id": 10}
+{"event_type": "vehicle_return", "time": 1075.078, "vehicle_id": 4}
+{"event_type": "vehicle_return", "time": 1076.272, "vehicle_id": 9}
+{"event_type": "vehicle_return", "time": 1078.8690000000001, "vehicle_id": 5}

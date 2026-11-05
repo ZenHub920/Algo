@@ -25,23 +25,37 @@ One dispatch call:
   4. Re-order the trip's stops by UCS if that shortens it without losing credit.
   5. Adaptive wait: hold the van for one round (return []) only if the trip is
      light, nothing on it would lose credit by waiting, it is not late in the
-     day, and the vans idle at the hub could carry everything waiting.
+     day, the fleet has enough driving time left before the cutoff for the
+     parcels waiting (time-based backlog), and the vans idle at the hub could
+     carry everything waiting (capacity-based backlog).
+
+Why the time-based backlog check: vans run out of driving time, not space
+(trips use most of the 320 km range while about half full). Without it,
+light trips kept being held in the afternoon until too little fleet time was
+left, stranding parcels that arrived after 15:00. The check estimates the
+driving time the waiting parcels need (a round trip from the hub per
+vanload per location, an over-estimate since one trip can serve several
+locations) and refuses to hold if TIME_BACKLOG_FACTOR times that exceeds the
+fleet's remaining minutes before the cutoff.
 
 Complexity per call (n available parcels, L locations, m stops, k parcels on
 the trip, V vehicles):
   1. O(V)   2. O(n) hash-map totals + O(L) heap build + O(log L) per pop
   3. O(m^2 * (L*k + n))   4. O(m^3 * 2^m) for m <= MAX_UCS_STOPS, else skipped
-  5. O(k + n + V).   Space O(n + L + k + m * 2^m).
+  5. O(k + n + V) (hold tests, incl. O(n + L + V) time-based backlog).
+  Space O(n + L + k + m * 2^m).
 
-Measured on the 20 historical days (results/heuristic_best, scripts/ablation_heuristic_best.py):
-  * mean service score 0.9473 (worst day 0.933); beats every other policy on
-    each day except #8 + #7 (4 days better, 4 worse, 12 equal);
-  * UCS re-orders 41 of 556 trips, saving 166.5 km in total (about 4 km per
+Measured on the 20 historical days (results/heuristic_best; ablation by switching
+USE_* off):
+  * mean service score 0.9559 (worst day 0.942); beats every other policy on
+    every one of the 20 days, including #8 + #7 (0.9471);
+  * the time-based backlog check is worth +0.0086 (0.9473 without it): delivery
+    rate rises from 95.4% to 96.2% at the cost of more trips (632 vs 556) and
+    more km per delivered parcel (4.87 vs 4.51);
+  * UCS re-orders 41 of 632 trips, saving 166.6 km in total (about 4 km per
     re-ordered trip) with no change in score: the minutes saved never let a
     van take different parcels;
-  * the heap fallback changes 11 late-day seeds, also with no change in score;
-  * differences from #8 + #7 come from the seed tie-break (heap pops the
-    alphabetically first of equally at-risk locations), worth +0.0002 overall.
+  * the heap fallback changes 4 late-day seeds, worth +0.00006.
 """
 
 import math
@@ -59,8 +73,10 @@ EXTRA_WAIT = 30.0           # Minutes added to the wait estimate for the next va
 HOLD_LOAD_FRACTION = 0.7    # Only hold trips filled below 70% of capacity
 LAST_HOLD_MARGIN = 80.0     # Never hold within 80 minutes of the return cutoff (16:40 for 18:00)
 MAX_UCS_STOPS = 7           # UCS is exponential in stops; larger trips keep the insertion order
+TIME_BACKLOG_FACTOR = 2.0   # Safety factor on estimated driving time needed by waiting parcels
 USE_UCS_ORDERING = True     # Switches for the ablation study (scripts/ablation_heuristic_best.py)
 USE_HEAP_SEED_FALLBACK = True
+USE_TIME_BACKLOG = True
 
 
 def dispatch(parcel: Dict[str, Parcel], context: SimulationContext) -> List[str]:
@@ -136,6 +152,21 @@ def dispatch(parcel: Dict[str, Parcel], context: SimulationContext) -> List[str]
     for parcel_id, time in zip(route, delivery_times(route, parcel, context)):
         if credit(parcel_id, time) > credit(parcel_id, time + PLANNING_INTERVAL):
             return route                                # something on board would lose credit
+    if USE_TIME_BACKLOG:
+        # Time-based backlog: hash map of waiting load per location; each location
+        # needs one hub round trip per (started) vanload.
+        waiting_load_at: Dict[str, float] = {}
+        for parcel_id in waiting_ids:
+            location = parcel[parcel_id]["delivery_location_id"]
+            waiting_load_at[location] = waiting_load_at.get(location, 0.0) + parcel[parcel_id]["size"]
+        minutes_needed = math.fsum(
+            (dist[HUB][location] + dist[location][HUB]) * MINUTES_PER_KM * math.ceil(load / capacity - TOLERANCE)
+            for location, load in waiting_load_at.items())
+        minutes_left = math.fsum(
+            max(0.0, context["return_cutoff"] - max(now, v["available_at"]) - context["departure_delay"])
+            for v in context["fleet"].values())
+        if TIME_BACKLOG_FACTOR * minutes_needed > minutes_left:
+            return route                                # fleet time is short: waiting would strand parcels
     idle_vans = sum(1 for v in context["fleet"].values() if v["available_at"] <= now)
     waiting_load = sum(parcel[pid]["size"] for pid in waiting_ids)
     if waiting_load > idle_vans * capacity:

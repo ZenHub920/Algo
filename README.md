@@ -20,7 +20,7 @@ Python 3.9+; standard library only.
 | Task 1: performance metric | Chosen: weighted service score (see below) |
 | `calculate_metrics` inputs/outputs (Appendix C) | Done: inputs parsed, deliveries joined to parcels, return value validated |
 | Metric in `calculate_metrics` | Done: `service_score` plus supporting figures |
-| Task 3: dispatch policies | Done: `edd_heap.py` (#1), `location_batching.py` (#3), `score_insertion.py` (#4), `urgency_insertion.py` (#8), `urgency_holdback.py` (#8 + #7) and the proposed `heuristic_best.py` (#8 + adaptive #7, with heap and UCS) |
+| Task 3: dispatch policies | Done: `edd_heap.py` (#1), `location_batching.py` (#3), `score_insertion.py` (#4), `urgency_insertion.py` (#8), `urgency_holdback.py` (#8 + #7) and the proposed `heuristic_best.py` (#8 + adaptive #7 with a time-based backlog check, heap and UCS) |
 | **Task 4: experiments and analysis** | **TODO** (see `docs/report_outline.md`) |
 
 ## Performance metric: weighted service score
@@ -60,7 +60,7 @@ solution/
     ├── score_insertion.py    # Policy #4: insert stops by predicted credit per extra km
     ├── urgency_insertion.py  # Policy #8: #4, but start each trip at the most at-risk location
     ├── urgency_holdback.py   # Policy #8 + #7: #8, but hold light, non-urgent trips one round
-    └── heuristic_best.py     # PROPOSED: #8 + adaptive #7, heap seed ranking, UCS stop ordering
+    └── heuristic_best.py     # PROPOSED: #8 + adaptive #7 (time-based backlog), heap seed ranking, UCS stop ordering
 results/<policy>/<day>/       # log.txt (simulator) + metrics.json (monitor)
 scripts/
 ├── run_experiments.py        # Simulate + measure many days / policies in one go
